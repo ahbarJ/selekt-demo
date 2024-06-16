@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.ahbarx.selektdemo.ui.theme.SelektDemoTheme
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,8 +22,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             SelektDemoTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    ContactsListView(
+                        contacts = getContactsFromDatabase(),
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -38,10 +40,27 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+@Composable
+fun ContactsListView(contacts: List<Contact>, modifier: Modifier = Modifier) {
+    LazyColumn {
+        items(contacts) { contact ->
+            Text(text = "$contact")
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun ContactsListViewPreview() {
     SelektDemoTheme {
-        Greeting("Android")
+        ContactsListView(List<Contact> (size = 4){index: Int ->
+            Contact("Contact", 25U, "0694") }) // dummy data
     }
+}
+
+data class Contact(val name: String, val age: UInt, val phone: String)
+private fun deriveKey(): ByteArray = byteArrayOf(0x05, 0x07, 0x08, 0x0f)
+private fun getContactsFromDatabase() : List<Contact> {
+    // to be defined later
+    return emptyList()
 }
