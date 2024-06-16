@@ -66,4 +66,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(platform("com.bloomberg:selekt-bom:0.22.1"))
+    implementation("com.bloomberg:selekt-android")
+    runtimeOnly("com.bloomberg:selekt-android-sqlcipher")
 }
