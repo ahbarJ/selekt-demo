@@ -1,5 +1,6 @@
 package com.ahbarx.selektdemo
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,21 +19,45 @@ import androidx.compose.foundation.lazy.items
 import androidx.room.Room
 import com.bloomberg.selekt.SQLiteJournalMode
 import com.bloomberg.selekt.android.support.createSupportSQLiteOpenHelperFactory
-var database: ContactDatabase? = null
+
+private lateinit var database: ContactDatabase
+private lateinit var dao: ContactDao
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // according to https://bloomberg.github.io/selekt/getting_started/
-        // we will need these variables
+        enableEdgeToEdge()
+        setContent {
+            SelektDemoTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    ContactsListView(
+                        contacts = getContactsFromDatabase(),
+                        modifier = Modifier.padding(innerPadding)
+                    )
+
+                }
+            }
+        }
+
+        val TAG = "MaiAct"
+        Log.d(TAG, "onCreate called")
+
         val factory = createSupportSQLiteOpenHelperFactory(
             SQLiteJournalMode.WAL,
             deriveKey()
         )
-        database = Room.databaseBuilder(applicationContext, ContactDatabase::class.java,
+        Log.d(TAG, "factory val created")
+
+        // ERROR ON THIS LINE: cannot find database implementation
+        database = Room.databaseBuilder(this, ContactDatabase::class.java,
             "contact")
             .openHelperFactory(factory)
             .build()
-        val dao = database!!.contactDao()
+
+        Log.d(TAG, "database object created")
+        dao = database.contactDao()
+        Log.d("Main", "database object: ${database}\ndao object: $dao")
+
         if (dao.getAll().isEmpty()) { // inserting some Contacts
             Log.d("MainActivity","Database empty. Inserting some dummy data.")
             val contactList = arrayListOf(
@@ -43,19 +68,7 @@ class MainActivity : ComponentActivity() {
             dao.insertAll(contactList)
         }
 
-        enableEdgeToEdge()
-        setContent {
-            SelektDemoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    getContactsFromDatabase()?.let {
-                        ContactsListView(
-                            contacts = it,
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
-                }
-            }
-        }
+
     }
 }
 
@@ -73,13 +86,13 @@ fun ContactsListView(contacts: List<Contact>, modifier: Modifier = Modifier) {
 @Composable
 fun ContactsListViewPreview() {
     SelektDemoTheme {
-        getContactsFromDatabase()?.let { ContactsListView(it) } // dummy data
+        ContactsListView(getContactsFromDatabase()) // dummy data
     }
 }
 
 
 private fun deriveKey(): ByteArray = byteArrayOf(0x05, 0x07, 0x08, 0x0f)
-private fun getContactsFromDatabase() : List<Contact>? {
+private fun getContactsFromDatabase() : List<Contact> {
     // to be defined later
-    return database?.contactDao()?.getAll()
+    return dao.getAll()
 }
