@@ -14,19 +14,3 @@ abstract class ContactDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
 }
 
-@Entity
-data class Contact(
-    @PrimaryKey val uid: Int,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "age") val age: UInt,
-    @ColumnInfo(name = "phone") val phone: String
-)
-
-@Dao
-interface ContactDao {
-    @Query("SELECT * FROM contact")
-    fun getAll(): List<Contact>
-
-    @Insert
-    fun insertAll(vararg contact: ArrayList<Contact>)
-}

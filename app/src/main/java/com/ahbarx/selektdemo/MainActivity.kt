@@ -61,9 +61,9 @@ class MainActivity : ComponentActivity() {
         if (dao.getAll().isEmpty()) { // inserting some Contacts
             Log.d("MainActivity","Database empty. Inserting some dummy data.")
             val contactList = arrayListOf(
-                Contact(1, "Ahbar Ami", 31U, "09145474261"),
-                Contact(1, "Peter Parker", 33U, "04365122"),
-                Contact(1, "Mary Jane", 28U, "03254881")
+                Contact(name = "Ahbar Ami", age = 31U, phoneNumber = "09145474261"),
+                Contact(name = "Mary Joseph", age = 27U, phoneNumber = "09145001001"),
+                Contact(name = "Joe Biden", age = 121U, phoneNumber = "00000000001")
             )
             dao.insertAll(contactList)
         }
@@ -96,3 +96,4 @@ private fun getContactsFromDatabase() : List<Contact> {
     // to be defined later
     return dao.getAll()
 }
+
