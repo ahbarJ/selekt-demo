@@ -1,5 +1,6 @@
 package com.ahbarx.selektdemo
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.room.Room
 import com.bloomberg.selekt.SQLiteJournalMode
 import com.bloomberg.selekt.android.support.createSupportSQLiteOpenHelperFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private lateinit var database: ContactDatabase
 private lateinit var dao: ContactDao
@@ -34,7 +38,6 @@ class MainActivity : ComponentActivity() {
                         contacts = getContactsFromDatabase(),
                         modifier = Modifier.padding(innerPadding)
                     )
-
                 }
             }
         }
@@ -48,25 +51,26 @@ class MainActivity : ComponentActivity() {
         )
         Log.d(TAG, "factory val created")
 
-        // ERROR ON THIS LINE: cannot find database implementation
         database = Room.databaseBuilder(this, ContactDatabase::class.java,
-            "contact")
+            "contacts")
             .openHelperFactory(factory)
-            .build()
+            .build()                        // ERROR ON THIS LINE
 
         Log.d(TAG, "database object created")
         dao = database.contactDao()
         Log.d("Main", "database object: ${database}\ndao object: $dao")
-
-        if (dao.getAll().isEmpty()) { // inserting some Contacts
-            Log.d("MainActivity","Database empty. Inserting some dummy data.")
-            val contactList = arrayListOf(
-                Contact(name = "Ahbar Ami", age = 31U, phoneNumber = "09145474261"),
-                Contact(name = "Mary Joseph", age = 27U, phoneNumber = "09145001001"),
-                Contact(name = "Joe Biden", age = 121U, phoneNumber = "00000000001")
-            )
-            dao.insertAll(contactList)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (dao.getAll().isEmpty()) { // inserting some Contacts
+                Log.d("MainActivity","Database empty. Inserting some dummy data.")
+                val contactList = arrayListOf(
+                    Contact(name = "Ahbar Ami", age = 31U, phoneNumber = "09145474261"),
+                    Contact(name = "Mary Joseph", age = 27U, phoneNumber = "09145001001"),
+                    Contact(name = "Joe Biden", age = 121U, phoneNumber = "00000000001")
+                )
+                dao.insertAll(contactList)
+            }
         }
+
 
 
     }
@@ -82,18 +86,30 @@ fun ContactsListView(contacts: List<Contact>, modifier: Modifier = Modifier) {
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Preview(showBackground = true)
 @Composable
 fun ContactsListViewPreview() {
     SelektDemoTheme {
-        ContactsListView(getContactsFromDatabase()) // dummy data
+        var contacts: List<Contact> = emptyList()
+        CoroutineScope(Dispatchers.IO).launch {
+            contacts = getContactsFromDatabase()
+        }
+        ContactsListView(contacts) // dummy data
     }
 }
 
 
-private fun deriveKey(): ByteArray = byteArrayOf(0x05, 0x07, 0x08, 0x0f)
+private fun deriveKey(): ByteArray{
+    return "ThisIsTheKeyStringWhichIForgot!!".toByteArray()
+}
+
 private fun getContactsFromDatabase() : List<Contact> {
     // to be defined later
-    return dao.getAll()
+    var contacts: List<Contact> = emptyList()
+    CoroutineScope(Dispatchers.IO).launch {
+        contacts = dao.getAll()
+    }
+    return contacts
 }
 
